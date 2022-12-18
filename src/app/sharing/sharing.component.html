@@ -1,0 +1,100 @@
+<div class="content">
+  <h3>COMPARTILHAMENTO</h3>
+</div>
+
+<!--Filter--> 
+<table class="table is-fullwidth">
+  <thead>
+    <tr>
+      <th>
+          <div class="select">
+            <select id="id">
+              <option selected value="-1">Todos</option>
+              <option value={{env.issues.Water.key}}>{{env.issues.Water.value}}</option>
+              <option value={{env.issues.Asphalt.key}}>{{env.issues.Asphalt.value}}</option>
+              <option value={{env.issues.Collect.key}}>{{env.issues.Collect.value}}</option>
+              <option value={{env.issues.Light.key}}>{{env.issues.Light.value}}</option>
+              <option value={{env.issues.Trash.key}}>{{env.issues.Trash.value}}</option>
+              <option value={{env.issues.Sewer.key}}>{{env.issues.Sewer.value}}</option>
+          </select>
+            <!--
+              <select [(ngModel)]="searchModel.ocorrencyId" (ngModelChange)="getAllOcorrencyDetail($event)">
+                  <option value="0">All</option>
+                  <option *ngFor="let ocorrency of ocorrencies; let i = index" [value]=ocorrency.id>{{ocorrency.name}}</option>
+              </select>-->
+          </div>
+      </th>
+      <th>
+        <div class="control">
+            <input class="input is-hovered" id="startDate" type="date" [(ngModel)]="searchModel.startDate">
+        </div>
+      </th>
+      <th>
+        <div class="control">
+            <input class="input is-hovered" id="endDate" type="date" [(ngModel)]="searchModel.endDate">
+        </div>
+      </th>
+      <th>
+          <div class="buttons">
+            <button class="button is-info" (click)="filterData()">Filtrar</button>
+          </div>
+      </th>
+
+    </tr>
+  </thead>
+</table>
+
+<!--Content grid-->
+<table class="table is-fullwidth" #searchTable>
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Propriedade 1</th>
+        <th>Propriedade 2</th>
+        <th>Propriedade 3</th>
+        <th>Propriedade 4</th>
+        <th>Criado em</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr *ngFor="let map of maps; let num = index">
+      
+        <th>{{map.title}}</th>
+        <td>{{map.latitude}}</td>
+        <td>{{map.longitude}}</td>
+        <td>{{map.property01}}</td>
+        <td>{{map.property02}}</td>
+        <td>{{map.property03}}</td>
+        <td>{{map.property04}}</td>
+        <td>{{map.createdAt}}</td>
+        <!--
+        <td>
+            <img class="icon-list" src="../../assets/img/lupin.png" (click)="viewData(order.id)">
+            <img class="icon-list" src="../../assets/img/edit.png" (click)="editData(order.id)">
+        </td>
+        -->
+      </tr>
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<nav class="pagination" role="navigation" aria-label="pagination">
+  <!--
+    <a class="pagination-previous" (click)="paginationData(order.page - 1)">Anterior</a>
+    <a class="pagination-next" (click)="paginationData(order.page + 1)">Próxima</a>
+    <p class="pagination-text">Page {{order.page + 1}}</p>
+    <p class="pagination-text">of {{order.totalPage + 1}}</p>
+    <p class="pagination-text">|</p>
+    <p class="pagination-text">Total of {{order.totalItems}} items</p> 
+  -->
+</nav>
+  
+<!-- Alert -->
+<!--
+<div class="notification" [ngClass]="{'show': alert, 'none': !alert, 'is-success': order.callbackSuccess, 'is-warning': !order.callbackSuccess}">
+    {{order.callbackMessage}}
+</div>
+-->

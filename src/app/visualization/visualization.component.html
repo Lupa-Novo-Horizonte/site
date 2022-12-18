@@ -1,0 +1,69 @@
+<div class="content">
+  <h1>VISUALIZAÇÃO</h1>
+</div>
+
+<!--Filter-->
+<table class="table is-fullwidth">
+  <thead>
+    <tr>
+      <th>
+          <div class="select">
+            <select id="id">
+              <option selected value="-1">Todos</option>
+              <option value={{env.issues.Water.key}}>{{env.issues.Water.value}}</option>
+              <option value={{env.issues.Asphalt.key}}>{{env.issues.Asphalt.value}}</option>
+              <option value={{env.issues.Collect.key}}>{{env.issues.Collect.value}}</option>
+              <option value={{env.issues.Light.key}}>{{env.issues.Light.value}}</option>
+              <option value={{env.issues.Trash.key}}>{{env.issues.Trash.value}}</option>
+              <option value={{env.issues.Sewer.key}}>{{env.issues.Sewer.value}}</option>
+          </select>
+            <!--
+              <select [(ngModel)]="searchModel.ocorrencyId" (ngModelChange)="getAllOcorrencyDetail($event)">
+                  <option value="0">All</option>
+                  <option *ngFor="let ocorrency of ocorrencies; let i = index" [value]=ocorrency.id>{{ocorrency.name}}</option>
+              </select>-->
+          </div>
+      </th>
+      <th>
+        <div class="control">
+            <input class="input is-hovered" id="startDate" type="date" [(ngModel)]="searchModel.startDate">
+        </div>
+      </th>
+      <th>
+        <div class="control">
+            <input class="input is-hovered" id="endDate" type="date" [(ngModel)]="searchModel.endDate">
+        </div>
+      </th>
+      <th>
+          <div class="buttons">
+            <button class="button is-info" (click)="filterData()">Filtrar</button>
+          </div>
+      </th>
+
+    </tr>
+  </thead>
+</table>
+
+<!--Map--> 
+<agm-map class="map" [latitude]="map.latitude" [longitude]="map.longitude" [zoom]="map.zoom">
+  <agm-marker *ngFor="let mp of maps; let i = index" 
+    [latitude]="mp.latitude" 
+    [longitude]="mp.longitude">
+    <agm-info-window>
+      <p><strong>{{mp.title}}</strong></p>
+      <p>{{mp.property01}}</p>
+      <p>{{mp.property02}}</p>
+      <p>{{mp.property03}}</p>
+      <p>{{mp.property04}}</p>
+      <!--<p><strong>Date: </strong>{{mp.createdAt}}</p>-->
+      <!--<img class="icon-list" src="../../assets/img/edit.png" (click)="editData(mp.id)">-->
+    </agm-info-window>
+  </agm-marker>
+</agm-map>
+
+<!-- Alert -->
+<!--
+<div class="notification" [ngClass]="{'show': alert, 'none': !alert, 'is-success': order.callbackSuccess, 'is-warning': !order.callbackSuccess}">
+  {{order.callbackMessage}}-
+</div>
+-->
