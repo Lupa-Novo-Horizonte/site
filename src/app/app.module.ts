@@ -5,12 +5,12 @@ import { HttpClientModule} from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CookieService } from 'ngx-cookie-service';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { RedirectGuard} from './redirect.guard';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
-import { AboutComponent } from './about/about.component';
 import { SharingComponent } from './sharing/sharing.component';
 import { VisualizationComponent } from './visualization/visualization.component';
 //import { LoginComponent } from './login/login.component';
@@ -22,7 +22,6 @@ import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component
     AppComponent,
     HeaderComponent,
     FooterComponent,
-    AboutComponent,
     SharingComponent,
     VisualizationComponent,
     //LoginComponent,
@@ -42,7 +41,7 @@ import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component
       echarts: () => import('echarts')
     })
   ],
-  providers: [CookieService],
+  providers: [CookieService, RedirectGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

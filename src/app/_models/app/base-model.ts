@@ -1,5 +1,7 @@
 export class BaseModel {
     id!: number;
+    title!: string;
+    type!: string;
     longitude!: string;
     latitude!: string;
     createdAt!: string;

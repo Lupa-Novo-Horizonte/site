@@ -2,50 +2,78 @@
   <h1>VISUALIZAÇÃO</h1>
 </div>
 
+
+
 <!--Filter-->
 <table class="table is-fullwidth">
   <thead>
     <tr>
-      <th>
-          <div class="select">
-            <select id="id">
-              <option selected value="-1">Todos</option>
-              <option value={{env.issues.Water.key}}>{{env.issues.Water.value}}</option>
-              <option value={{env.issues.Asphalt.key}}>{{env.issues.Asphalt.value}}</option>
-              <option value={{env.issues.Collect.key}}>{{env.issues.Collect.value}}</option>
-              <option value={{env.issues.Light.key}}>{{env.issues.Light.value}}</option>
-              <option value={{env.issues.Trash.key}}>{{env.issues.Trash.value}}</option>
-              <option value={{env.issues.Sewer.key}}>{{env.issues.Sewer.value}}</option>
+      <th style="background-color: aliceblue;">
+        <div class="select">
+          <select [(ngModel)]="ddlView">
+            <option value="0">Mapa</option>
+            <option value="1">Tabela</option>
           </select>
-            <!--
-              <select [(ngModel)]="searchModel.ocorrencyId" (ngModelChange)="getAllOcorrencyDetail($event)">
-                  <option value="0">All</option>
-                  <option *ngFor="let ocorrency of ocorrencies; let i = index" [value]=ocorrency.id>{{ocorrency.name}}</option>
-              </select>-->
-          </div>
+        </div>
       </th>
-      <th>
+      <th style="background-color: aliceblue;">
+        <div class="select">
+          <select [(ngModel)]="ddlTypeIssue" (ngModelChange)="ddlTypeIssueEvent()">
+            <option value="-1" [disabled]="ddlView==0 ? false : true" >Todos</option>
+            <option value={{env.type.Water.key}}>{{env.type.Water.value}}</option>
+            <option value={{env.type.Asphalt.key}}>{{env.type.Asphalt.value}}</option>
+            <option value={{env.type.Collect.key}}>{{env.type.Collect.value}}</option>
+            <option value={{env.type.Light.key}}>{{env.type.Light.value}}</option>
+            <option value={{env.type.Trash.key}}>{{env.type.Trash.value}}</option>
+            <option value={{env.type.Sewer.key}}>{{env.type.Sewer.value}}</option>
+          </select>
+        </div>
+      </th>
+      <th></th>
+      <th></th>
+      <th style="background-color: aliceblue;">
         <div class="control">
             <input class="input is-hovered" id="startDate" type="date" [(ngModel)]="searchModel.startDate">
         </div>
       </th>
-      <th>
+      <th style="background-color: aliceblue;">
         <div class="control">
             <input class="input is-hovered" id="endDate" type="date" [(ngModel)]="searchModel.endDate">
         </div>
       </th>
+      <th style="background-color: aliceblue;">
+        <div class="buttons">
+          <button class="button is-info" (click)="btFilterDataEvent()">Filtrar</button>
+        </div>
+      </th>
+      <th style="background-color: aliceblue;">
+        <div class="buttons">
+          <button class="button is-info" (click)="btGetAllEvent()">Limpar</button>
+        </div>
+      </th>
+      <th></th>
+      <th></th>
       <th>
-          <div class="buttons">
-            <button class="button is-info" (click)="filterData()">Filtrar</button>
-          </div>
+        <div class="buttons">
+          <img class="icon-print" src="assets/img/printing_reverso.png" (click)="btExportTableEvent()">
+        </div>
       </th>
 
     </tr>
   </thead>
 </table>
 
+<!-- Alert -->
+<div class="message is-warning" [style.display]="report.alert ? 'block' : 'none'">
+  <div class="message-body">  
+    {{report.message}}
+  </div>
+</div>
+
+
+
 <!--Map--> 
-<agm-map class="map" [latitude]="map.latitude" [longitude]="map.longitude" [zoom]="map.zoom">
+<agm-map class="map" [latitude]="map.latitude" [longitude]="map.longitude" [zoom]="map.zoom" [style.display]="ddlView==0 ? 'block' : 'none'">
   <agm-marker *ngFor="let mp of maps; let i = index" 
     [latitude]="mp.latitude" 
     [longitude]="mp.longitude">
@@ -61,9 +89,172 @@
   </agm-marker>
 </agm-map>
 
-<!-- Alert -->
-<!--
-<div class="notification" [ngClass]="{'show': alert, 'none': !alert, 'is-success': order.callbackSuccess, 'is-warning': !order.callbackSuccess}">
-  {{order.callbackMessage}}-
-</div>
--->
+<!--Content grid - Light-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==2 && ddlView==1 ? 'block' : 'none'">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Título</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Possui poste?</th>
+      <th>As luzes estão funcionando?</th>
+      <th>Há fios elétricos soltos?</th>
+      <th>Criado em</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of report.lightList; let num = index">
+      <td>{{item.id}}</td>
+      <td>{{item.title}}</td>
+      <td>{{item.latitude}}</td>
+      <td>{{item.longitude}}</td>
+      <td>{{convertBoolToPt(item.hasLight)}}</td>
+      <td>{{convertBoolToPt(item.isItWorking)}}</td>
+      <td>{{convertBoolToPt(item.hasLosesCable)}}</td>
+      <td>{{convertDateToPt(item.createdAt)}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!--Content grid - Asphalt-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==0 && ddlView==1 ? 'block' : 'none'">
+<thead>
+  <tr>
+    <th>Id</th>
+    <th>Título</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>A via é asfaltada?</th>
+    <th>A via possui buracos ou crateras?</th>
+    <th>Há calçadas pavimentadas de acordo com os requisitos municipais?</th>
+    <th>Criado em</th>
+  </tr>
+</thead>
+<tbody>
+  <tr *ngFor="let item of report.asphaltList; let num = index">
+    <td>{{item.id}}</td>
+    <td>{{item.title}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{convertBoolToPt(item.isPaved)}}</td>
+    <td>{{convertBoolToPt(item.hasHoles)}}</td>
+    <td>{{convertBoolToPt(item.hasPavedSidewalks)}}</td>
+    <td>{{convertDateToPt(item.createdAt)}}</td>
+  </tr>
+</tbody>
+</table>
+
+<!--Content grid - Collect-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==1 && ddlView==1 ? 'block' : 'none'">
+<thead>
+  <tr>
+    <th>Id</th>
+    <th>Título</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>Há coleta de lixo?</th>
+    <th>Qual a frequência semanal?</th>
+    <th>Criado em</th>
+  </tr>
+</thead>
+<tbody>
+  <tr *ngFor="let item of report.collectList; let num = index">
+    <td>{{item.id}}</td>
+    <td>{{item.title}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{convertBoolToPt(item.hasCollect)}}</td>
+    <td>{{item.howManyTimes}}</td>
+    <td>{{convertDateToPt(item.createdAt)}}</td>
+  </tr>
+</tbody>
+</table>
+
+<!--Content grid - Sewer-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==4 && ddlView==1 ? 'block' : 'none'">
+<thead>
+  <tr>
+    <th>Id</th>
+    <th>Título</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>Há coleta ou tratamento de esgoto?</th>
+    <th>Possui fossa?</th>
+    <th>Alguma obra de saneamento está sendo executada?</th>
+    <th>Criado em</th>
+  </tr>
+</thead>
+<tbody>
+  <tr *ngFor="let item of report.sewerList; let num = index">
+    <td>{{item.id}}</td>
+    <td>{{item.title}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{convertBoolToPt(item.hasHomeSewer)}}</td>
+    <td>{{convertBoolToPt(item.hasHomeCesspool)}}</td>
+    <td>{{convertBoolToPt(item.hasSanitationProject)}}</td>
+    <td>{{convertDateToPt(item.createdAt)}}</td>
+  </tr>
+</tbody>
+</table>
+
+<!--Content grid - Trash-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==5 && ddlView==1 ? 'block' : 'none'">
+<thead>
+  <tr>
+    <th>Id</th>
+    <th>Título</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>A prefeitura faz a limpeza?</th>
+    <th>Qual a frequência?</th>
+    <th>Existe lixo acumulado?</th>
+    <th>A prefeitura faz a capinagem?</th>
+    <th>Criado em</th>
+  </tr>
+</thead>
+<tbody>
+  <tr *ngFor="let item of report.trashList; let num = index">
+    <td>{{item.id}}</td>
+    <td>{{item.title}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{convertBoolToPt(item.hasRoadcleanUp)}}</td>
+    <td>{{item.howManyTimes}}</td>
+    <td>{{convertBoolToPt(item.hasAccumulatedTrash)}}</td>
+    <td>{{convertBoolToPt(item.hasLandWeeding)}}</td>
+    <td>{{convertDateToPt(item.createdAt)}}</td>
+  </tr>
+</tbody>
+</table>
+
+<!--Content grid - Water-->
+<table #searchTable class="table is-fullwidth" [style.display]="ddlTypeIssue==6 && ddlView==1 ? 'block' : 'none'">
+<thead>
+  <tr>
+    <th>Id</th>
+    <th>Título</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>Possui poço amazônico?</th>
+    <th>Há água encanada?</th>
+    <th>Quantos dias faltam água na semana?</th>
+    <th>Alguma obra de saneamento está sendo executada?</th>
+    <th>Criado em</th>
+  </tr>
+</thead>
+<tbody>
+  <tr *ngFor="let item of report.waterList; let num = index">
+    <td>{{item.id}}</td>
+    <td>{{item.title}}</td>
+    <td>{{item.latitude}}</td>
+    <td>{{item.longitude}}</td>
+    <td>{{convertBoolToPt(item.hasWell)}}</td>
+    <td>{{convertBoolToPt(item.homeWithWater)}}</td>
+    <td>{{item.waterMissedInAWeek}}</td>
+    <td>{{convertBoolToPt(item.hasSanitationProject)}}</td>
+    <td>{{convertDateToPt(item.createdAt)}}</td>
+  </tr>
+</tbody>
+</table>

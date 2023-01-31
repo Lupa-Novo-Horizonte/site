@@ -1,9 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, ElementRef, ViewChild  } from '@angular/core';
 import { environment } from '../../environments/environment';
 
-import { MapService } from '../_services/map.service';
 import { MapModel } from '../_models/map-model'
 import { SearchModel } from '../_models/search-model';
+import { ReportModel } from '../_models/report-model';
+
+import { MapService } from '../_services/map.service';
+import { ExportService } from '../_services/export.service';
+import { ReportService } from '../_services/report.service';
 
 @Component({
   selector: 'app-map',
@@ -12,23 +17,18 @@ import { SearchModel } from '../_models/search-model';
 })
 export class VisualizationComponent implements OnInit {
   readonly env = environment;
-
+  report: ReportModel;
+  searchModel: SearchModel;
+  ddlTypeIssue: number = -1;
+  ddlView: number = 0;
   maps: MapModel[] = [];
   map: MapModel;
-  searchModel: SearchModel;
-  
-  modal: boolean;
-  readonly: boolean;
-  alert: boolean;
 
-  ddlOcorrencyIndex: number;
+  @ViewChild('searchTable') searchTable: ElementRef;  
 
-  constructor(private apiMap:MapService){ 
+  constructor(private apiMap:MapService, private apiReport:ReportService, private apiExport:ExportService){ 
+      this.report = new ReportModel();  
       this.searchModel = new SearchModel();
-      this.modal = false;
-      this.readonly = true;
-      this.alert = false;
-
       this.map = new MapModel();
       this.map.zoom = environment.defaultLocation.zoom;
       this.map.latitude = environment.defaultLocation.latitude;
@@ -36,238 +36,195 @@ export class VisualizationComponent implements OnInit {
     }
 
   ngOnInit(): void {
-    this.getAll();    
+    this.apiGetAll('0','0');
+    this.apiGetAllMap('0','0', '-1');
   }
+    
 
-  
-  filterData()
+
+  btFilterDataEvent()
   {
-    this.apiMap.GetBy(this.searchModel.id)
-      .subscribe({
-        next: (data:any) => {
-          console.log('Success');
-          if(data.total > 0){
-            this.maps = data.regions;
-            //this.convertToMapsArray(data.orders);
-          }
-          else
-          {
-            this.maps = [];
-          }
-          /*
-          this.map.totalItems = data.total;
-          this.map.totalPage = Math.floor(data.total / environment.pagination);
-          this.map.page = data.page;          
-          this.map.callbackSuccess = true;
-          this.map.callbackMessage = 'Success.';
-          this.alert = true;
-          */
-          setTimeout(() => {
-            this.alert = false;
-          }, 5000);
-        },
-        error: error => {
-          /*
-          this.map.callbackSuccess = false;
-          this.map.callbackMessage = error;
-          */
-          console.log('Error');
-          this.alert = true;
-          setTimeout(() => {
-            this.alert = false;
-          }, 5000);
-          console.error(error);
-        },
-      });
-    console.log('Fim');
+    this.showAlert('');
 
-    this.modal = false;
-    this.readonly = true;
+    if(! this.validateDate(this.searchModel.startDate, this.searchModel.endDate))
+    {
+      this.showAlert('Data inválida. Favor revisar as informações inseridas.');
+    }
+    else
+    {
+      var ticksStartDate = ((new Date(this.searchModel.startDate).getTime() * 10000) + 621355968000000000);
+      var ticksEndDate = ((new Date(this.searchModel.endDate).getTime() * 10000) + 621355968000000000);
+      this.apiGetAll(ticksStartDate.toString(), ticksEndDate.toString());
+      this.apiGetAllMap(ticksStartDate.toString(), ticksEndDate.toString(), this.ddlTypeIssue.toString());
+    }
   }
-  
-  getAll()
+
+  btGetAllEvent(){
+    this.showAlert('');
+    this.searchModel.startDate = '';
+    this.searchModel.endDate = '';
+    this.apiGetAll('0','0');
+    this.apiGetAllMap('0','0','-1');
+  } 
+
+  btExportTableEvent(){
+    if(confirm("Deseja exportar os dados?"))
+      this.apiExport.exportTableElmToExcel(this.searchTable, 'Report-' + Date.now.toString());
+  }
+
+  ddlTypeIssueEvent(){
+    var ticksStartDate = 0;
+    var ticksEndDate = 0;
+
+    if(this.validateDate(this.searchModel.startDate, this.searchModel.endDate))
+    {
+      ticksStartDate = ((new Date(this.searchModel.startDate).getTime() * 10000) + 621355968000000000);
+      ticksEndDate = ((new Date(this.searchModel.endDate).getTime() * 10000) + 621355968000000000);  
+    }
+    
+    this.apiGetAllMap(ticksStartDate.toString(), ticksEndDate.toString(), this.ddlTypeIssue.toString());
+  }
+
+
+
+  apiGetAllMap(startDate: string, endDate: string, typeIssue: string)
+  {
+    this.searchModel.page = environment.pagination;
+    this.searchModel.skip = 0;
+    this.maps = [];
+
+    this.apiMap.GetAll(startDate, endDate, typeIssue)
+    .subscribe({
+      next: (data:any) => {
+        for(let item of data.regions)
+        {
+          let mp = new MapModel();
+          mp.title = item.title;
+          mp.type = item.type;
+          mp.property01 = item.description.split('|')[0];
+          mp.property02 = item.description.split('|')[1];
+          mp.property03 = item.description.split('|')[2];
+          mp.property04 = item.description.split('|')[3];
+          mp.latitude = item.latitude;
+          mp.longitude = item.longitude;
+          this.maps.push(mp);
+        }
+      },
+      error: error => {
+        console.error(error);
+        this.showAlert('Sistema apresentando falhas. Favor tentar novamente mais tarde :(');
+        setTimeout(() => {
+          this.showAlert('Sistema indisponível. Favor tentar novamente mais tarde :(');
+        }, 30000);
+      },
+    });
+  }
+
+  apiGetAll(startDate: string, endDate: string)
   {
     this.searchModel.page = environment.pagination;
     this.searchModel.skip = 0;
 
-    this.apiMap.GetAll()
+    this.apiReport.GetAll(startDate, endDate)
     .subscribe({
       next: (data:any) => {
-        console.info('Success');
-        if(data.regions.length > 0){
-          for(let item of data.regions)
-          {
-            let mp = new MapModel();
-            mp.title = item.title;
-            mp.type = item.type;
-            mp.property01 = item.description.split('|')[0];
-            mp.property02 = item.description.split('|')[1];
-            mp.property03 = item.description.split('|')[2];
-            mp.property04 = item.description.split('|')[3];
-            mp.latitude = item.latitude;
-            mp.longitude = item.longitude;
-            this.maps.push(mp);
-          }
-          console.info(this.maps);
-        }
-        else
-        {
-          this.maps = [];
-        }
-        /*
-        this.order.totalItems = data.total;
-        this.order.totalPage = Math.floor(data.total / environment.pagination);
-        this.order.page = data.page;
-        */
-      },
-      error: error => {
-        console.info('Error');
-        /*
-        this.order.callbackSuccess = false;
-        this.order.callbackMessage = error;
-        */
-        this.alert = true;
-        console.error(error);
-        setTimeout(() => {
-          this.alert = false;
-        }, 5000);
-      },
-    });
-    console.info('End');
-  }
+        this.report.countWater = data.countWater;
+        this.report.waterList = data.waterList;
+        
+        this.report.countLight = data.countLight;
+        this.report.lightList = data.lightList;
 
- /*
-  getAllOcorrency()
-  {
-    this.apiOcorrency.GetAll()
-    .subscribe({
-      next: (data:any) => {
-        this.ocorrencies = data.ocorrencies;
+        this.report.countAsphalt = data.countAsphalt;
+        this.report.asphaltList = data.asphaltList;
+
+        this.report.countCollect = data.countCollect;
+        this.report.collectList = data.collectList;
+
+        this.report.countSewer = data.countSewer;
+        this.report.sewerList = data.sewerList;
+
+        this.report.countTrash = data.countTrash;
+        this.report.trashList = data.trashList;
+
+        this.report.countPublicService = data.countPublicService;
+        this.report.publicServiceList = data.publicServiceList;
       },
       error: error => {
-        this.alert = true;
         console.error(error);
+        this.showAlert('Sistema apresentando falhas. Favor tentar novamente mais tarde :(');
         setTimeout(() => {
-          this.alert = false;
-        }, 5000);
+          this.showAlert('Sistema indisponível. Favor tentar novamente mais tarde :(');
+        }, 30000);
       },
     });
   }
 
-  getAllOcorrencyDetail(ocorrencyId : number)
-  {
-    if(ocorrencyId > 0)
+
+
+  convertBoolToPt(value: boolean){
+    if(value)
+      return "Sim";
+    else
+      return "Não";
+  }
+
+  convertDateToPt(value: string){
+    var pipe = new DatePipe('en-US');
+    return pipe.transform(value, 'mediumDate');
+  }
+
+  validateDate(startDate: string, endDate: string){
+    if(!startDate || !endDate)
+      return false;
+    else if(startDate > endDate)
+      return false;
+    else
+      return true;
+  }
+
+  showAlert(message: string){
+    if(! message)
     {
-      this.apiDetail.GetAll(ocorrencyId)
-      .subscribe({
-        next: (data:any) => {
-          this.details = data.ocorrencyDetails;
-        },
-        error: error => {
-          this.alert = true;
-          console.error(error);
-          setTimeout(() => {
-            this.alert = false;
-          }, 5000);
-        },
-      });
+      this.report.alert = false;
+      this.report.message = '';
     }
     else
-      this.details = [];
-  }
-
-  getAllStatus()
-  {
-    this.apiStatus.GetAll()
-    .subscribe({
-      next: (data:any) => {
-        this.statuses = data.orderStatus;
-      },
-      error: error => {
-        this.alert = true;
-        console.error(error);
-        setTimeout(() => {
-          this.alert = false;
-        }, 5000);
-      },
-    });
-  }
-
-  convertToMapsArray(orders: OrderModel[])
-  {
-    this.maps = [];
-    for (let index = 0; index < orders.length; index++) {
-      const element = orders[index];
-      let mp = new VisualizationModel();
-      mp.id = element.id.toString();
-      mp.latitude = parseFloat(element.latitude);
-      mp.longitude = parseFloat(element.longitude);
-      mp.ocorrency = element.ocorrency.name;
-      mp.ocorrencyDetail = element.ocorrencyDetail.description;
-      mp.orderStatus = element.orderStatus.name;
-      mp.createdAt = element.createdAt;
-      this.maps.push(mp);
-    }
-  }
-
-  editData(id: string)
-  {
-    var result = this.orders.find(x => x.id == parseInt(id));
-    if(result != null)
     {
-      this.order.id = result['id'];
-      this.order.latitude = result['latitude'];
-      this.order.longitude = result['longitude'];
-      this.order.ocorrency = result['ocorrency'];
-      this.order.ocorrencyDetail = result['ocorrencyDetail'];
-      this.order.orderStatus = result['orderStatus'];
-      this.order.createdAt = result['createdAt'];
-      this.modal = true;
-      this.readonly = false;
-
-      this.ddlOcorrencyIndex = (this.ocorrencies.findIndex(c => c.id == this.order.ocorrency.id)) + 1;
-      this.ddlStatusIndex = (this.statuses.findIndex(c => c.id == this.order.orderStatus.id)) + 1;
-      this.getAllOcorrencyDetail(this.order.ocorrency.id);
-      this.ddlDetailIndex = this.order.ocorrencyDetail.id;
+      this.report.alert = true;
+      this.report.message = message;
     }
   }
 
-  putData()
+  /*
+  paginationData(page: number)
   {
-    this.order.ocorrencyId = this.ocorrencies[this.ddlOcorrencyIndex -1].id;
-    this.order.ocorrencyDetailId = this.ddlDetailIndex;
-    this.order.orderStatusId = this.statuses[this.ddlStatusIndex -1].id;
-        
-    this.apiOrder.Put(this.order)
+    if(page >= 0 && page <= this.order.totalPage)
+    {
+      this.searchModel.skip = environment.pagination * page;
+      this.searchModel.page = environment.pagination;
+
+      this.apiOrder.Patch(this.searchModel)
       .subscribe({
         next: (data:any) => {
-          this.ngOnInit();
-          this.order.callbackSuccess = true;
-          this.order.callbackMessage = 'Success.';
-          this.alert = true;
-          setTimeout(() => {
-            this.alert = false;
-          }, 5000);
+          if(data.total > 0)
+            this.orders = data.orders;
+          else
+            this.orders = [];
+          this.order.totalItems = data.total;
+          this.order.totalPage = Math.floor(data.total / environment.pagination);
+          this.order.page = data.page;
         },
         error: error => {
-          this.order.callbackSuccess = false;
-          this.order.callbackMessage = error;
-          this.alert = true;
-          setTimeout(() => {
-            this.alert = false;
-          }, 5000);
-          console.error(error);
+            this.order.callbackSuccess = false;
+            this.order.callbackMessage = error;
+            this.alert = true;
+            setTimeout(() => {
+              this.alert = false;
+            }, 5000);
+            console.error(error);
         },
       });
-    
-    this.modal = false;
-    this.readonly = true;
-  }
-
-  closeData()
-  {
-    this.modal = false;
-    this.readonly = true;
-  }
+    }
+  }  
   */
 }

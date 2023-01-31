@@ -13,9 +13,9 @@ export const environment = {
   },
   endpoints:
   {
-    map: "https://localhost:58365/api/map",
     login: "https://localhost:58365/api/user/authenticate",
-    report: "https://localhost:58365/api/report"
+    map: "https://localhost:58365/api/site/map",
+    report: "https://localhost:58365/api/site/report"
   },
   externalLink:
   {
@@ -24,9 +24,10 @@ export const environment = {
     linkedin:"https://www.linkedin.com/in/projeto-lupa-nh-70826b240",
     youtube:"https://www.youtube.com/channel/UCsJzR_BzrP6TkmHjVeH0xcA",
     twitter:"https://twitter.com/projetolupanh",
-    website:"http://lupa.tecccog.net"
+    website:"http://lupa.tecccog.net",
+    openapi:"https://localhost:58365/swagger/index.html"
   },
-  issues:
+  type:
   {
     Asphalt:{ "key":0 , "value" : "Calçadas e Asfalto"},
     Collect:{ "key": 1, "value" : "Coleta de Lixo"},
