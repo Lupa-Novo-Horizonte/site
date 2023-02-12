@@ -8,6 +8,7 @@ export class MapModel {
     longitude!: number;
     latitude!: number;
     createdAt!: string;
+    icon!:string;
 
     initialLongitude!: number;
     initialLatitude!: number;

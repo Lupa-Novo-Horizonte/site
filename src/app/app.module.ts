@@ -35,7 +35,7 @@ import { HomeLayoutComponent } from './layouts/home-layout/home-layout.component
     FormsModule,
     ReactiveFormsModule,
     AgmCoreModule.forRoot({
-      apiKey: 'AIzaSyDaniPLp98EiLdP7uFnwiuLLTCglvAP8v4'
+      apiKey: 'AIzaSyAiDCTCM55kP4mIJpEtrTuH8TP_ZSJ4ONQ'
     }),
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts')

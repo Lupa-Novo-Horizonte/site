@@ -1,57 +1,57 @@
 import { Injectable } from '@angular/core';
 import jwt_decode from 'jwt-decode';
+import { HttpClient} from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { LoginModel } from '../_models/login-model';
+import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class JwtService {
-    jwtToken!: string;
-    decodedToken!: { [key: string]: string };
- 
-    constructor() {
+
+    constructor(private http:HttpClient) {
     }
  
-    setToken(token: string) {
-      if (token) {
-        this.jwtToken = token;
+    cache:string;
+
+    async getToken() {
+      let jwtToken = this.getTokenCached();
+
+      if(this.isTokenExpired(jwtToken))
+      {  
+        let response = await this.authenticate(environment.token.login, environment.token.password);
+        this.cache = response.token;
+        return response.token;
+      }
+      else
+      {
+        return jwtToken;
+      }
+    }
+
+    private getTokenCached() {
+      if (this.cache) {
+        //console.log('Returning cached value!')
+      }
+      return this.cache;
+    }
+ 
+    private getExpiryTime(jwtToken: string) {
+      if(jwtToken){
+        var decodedToken: { [key: string]: string };
+        decodedToken = jwt_decode(jwtToken);
+        return decodedToken ? decodedToken.exp : '';
+      }
+      else
+      {
+        return '';
       }
     }
  
-    decodeToken() {
-      if (this.jwtToken) {
-        this.decodedToken = jwt_decode(this.jwtToken);
-      }
-    }
- 
-    getDecodeToken() {
-      return jwt_decode(this.jwtToken);
-    }
- 
-    getEmail() {
-      this.decodeToken();
-      return this.decodedToken ? this.decodedToken.email : '';
-    }
-    
-    getFullName() {
-      this.decodeToken();
-      return this.decodedToken ? this.decodedToken.fullName : '';
-    }
-
-    getRole() {
-      this.decodeToken();
-      return this.decodedToken ? this.decodedToken.role : '';
-    }
- 
-    getExpiryTime() {
-      this.decodeToken();
-      return this.decodedToken ? this.decodedToken.exp : '';
-    }
- 
-    isTokenExpired(): boolean {
-
-      let number = this.getExpiryTime()
-
-      if(number != null)
+    private isTokenExpired(jwtToken : string): boolean {
+      let number = this.getExpiryTime(jwtToken)
+      if(number)
       {
         const expiryTime: number = parseFloat(number);
         if (expiryTime) {
@@ -61,6 +61,15 @@ export class JwtService {
         }
       }
       else
-        return false;
+        return true;
+    }   
+
+    private async authenticate(login: string, password: string) : Promise<LoginModel>
+    {
+      let model = {
+        Username: login,
+        Password: password,
+      }      
+      return await this.http.post<LoginModel>(environment.endpoints.login, model).toPromise<LoginModel>()
     }
 }

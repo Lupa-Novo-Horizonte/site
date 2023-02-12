@@ -5,6 +5,12 @@
 export const environment = {
   production: false,
   pagination: 10,
+  token:
+  {
+    login: "",
+    login: "",
+    password: ""
+  },
   defaultLocation:
   {
     latitude:-23.5120687,
@@ -29,13 +35,13 @@ export const environment = {
   },
   type:
   {
-    Asphalt:{ "key":0 , "value" : "Calçadas e Asfalto"},
-    Collect:{ "key": 1, "value" : "Coleta de Lixo"},
-    Light:{ "key": 2, "value": "Iluminação Pública"},
-    PublicService: { "key": 3, "value": "Serviços Público"},
-    Sewer: { "key": 4, "value": "Tratamento de Esgoto"},
-    Trash:{ "key": 5, "value" : "Limpeza Urbana"},
-    Water:{"key": 6, "value": "Água Potável"}
+    Asphalt:{ "key":0 , "value" : "Calçadas e Asfalto", "icon" : "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"},
+    Collect:{ "key": 1, "value" : "Coleta de Lixo" , "icon" : "http://maps.google.com/mapfiles/ms/icons/orange-dot.png"},
+    Light:{ "key": 2, "value": "Iluminação Pública", "icon" : "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"},
+    PublicService: { "key": 3, "value": "Serviços Público", "icon" : "http://maps.google.com/mapfiles/ms/icons/pink-dot.png"},
+    Sewer: { "key": 4, "value": "Tratamento de Esgoto", "icon" : "http://maps.google.com/mapfiles/ms/icons/red-dot.png"},
+    Trash:{ "key": 5, "value" : "Limpeza Urbana", "icon" : "http://maps.google.com/mapfiles/ms/icons/green-dot.png"},
+    Water:{"key": 6, "value": "Água Potável", "icon" : "http://maps.google.com/mapfiles/ms/icons/ltblue-dot.png"}
   }
 };
 

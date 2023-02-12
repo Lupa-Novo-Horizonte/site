@@ -25,7 +25,7 @@ export class VisualizationComponent implements OnInit {
   map: MapModel;
 
   @ViewChild('searchTable') searchTable: ElementRef;  
-
+  
   constructor(private apiMap:MapService, private apiReport:ReportService, private apiExport:ExportService){ 
       this.report = new ReportModel();  
       this.searchModel = new SearchModel();
@@ -35,9 +35,9 @@ export class VisualizationComponent implements OnInit {
       this.map.longitude = environment.defaultLocation.longitude;
     }
 
-  ngOnInit(): void {
-    this.apiGetAll('0','0');
-    this.apiGetAllMap('0','0', '-1');
+  async ngOnInit(): Promise<void> {
+    await this.apiGetAll('0','0');
+    await this.apiGetAllMap('0','0', '-1');
   }
     
 
@@ -87,13 +87,13 @@ export class VisualizationComponent implements OnInit {
 
 
 
-  apiGetAllMap(startDate: string, endDate: string, typeIssue: string)
+  async apiGetAllMap(startDate: string, endDate: string, typeIssue: string)
   {
     this.searchModel.page = environment.pagination;
     this.searchModel.skip = 0;
     this.maps = [];
 
-    this.apiMap.GetAll(startDate, endDate, typeIssue)
+    (await this.apiMap.GetAll(startDate, endDate, typeIssue))
     .subscribe({
       next: (data:any) => {
         for(let item of data.regions)
@@ -107,6 +107,7 @@ export class VisualizationComponent implements OnInit {
           mp.property04 = item.description.split('|')[3];
           mp.latitude = item.latitude;
           mp.longitude = item.longitude;
+          mp.icon = this.convertIcon(item.type);
           this.maps.push(mp);
         }
       },
@@ -120,12 +121,12 @@ export class VisualizationComponent implements OnInit {
     });
   }
 
-  apiGetAll(startDate: string, endDate: string)
+  async apiGetAll(startDate: string, endDate: string)
   {
     this.searchModel.page = environment.pagination;
     this.searchModel.skip = 0;
 
-    this.apiReport.GetAll(startDate, endDate)
+    (await this.apiReport.GetAll(startDate, endDate))
     .subscribe({
       next: (data:any) => {
         this.report.countWater = data.countWater;
@@ -171,6 +172,36 @@ export class VisualizationComponent implements OnInit {
   convertDateToPt(value: string){
     var pipe = new DatePipe('en-US');
     return pipe.transform(value, 'mediumDate');
+  }
+
+  convertIcon(value: number){
+    let icon = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"; // default icon
+    
+    switch (value){
+      case 0:
+        icon = environment.type.Asphalt.icon;
+      break;
+      case 1:
+        icon = environment.type.Collect.icon;
+      break;
+      case 2:
+        icon = environment.type.Light.icon;
+      break;
+      case 3:
+        icon = environment.type.PublicService.icon;
+      break;
+      case 4:
+        icon = environment.type.Sewer.icon;
+      break;
+      case 5:
+        icon = environment.type.Trash.icon;
+      break;
+      case 6:
+        icon = environment.type.Water.icon;
+      break;
+    }
+    
+    return icon;
   }
 
   validateDate(startDate: string, endDate: string){

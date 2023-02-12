@@ -73,10 +73,11 @@
 
 
 <!--Map--> 
-<agm-map class="map" [latitude]="map.latitude" [longitude]="map.longitude" [zoom]="map.zoom" [style.display]="ddlView==0 ? 'block' : 'none'">
+<agm-map class="map" id="map" [latitude]="map.latitude" [longitude]="map.longitude" [zoom]="map.zoom" [style.display]="ddlView==0 ? 'block' : 'none'">
   <agm-marker *ngFor="let mp of maps; let i = index" 
     [latitude]="mp.latitude" 
-    [longitude]="mp.longitude">
+    [longitude]="mp.longitude"
+    [iconUrl]= "{ url: mp.icon }">
     <agm-info-window>
       <p><strong>{{mp.title}}</strong></p>
       <p>{{mp.property01}}</p>
@@ -258,3 +259,12 @@
   </tr>
 </tbody>
 </table>
+
+<div class="legend">
+  <img class="legend-img" src={{env.type.Asphalt.icon}}><p class="legend-text">{{env.type.Asphalt.value}}</p>
+  <img class="legend-img" src={{env.type.Collect.icon}}><p class="legend-text">{{env.type.Collect.value}}</p>
+  <img class="legend-img" src={{env.type.Light.icon}}><p class="legend-text">{{env.type.Light.value}}</p>
+  <img class="legend-img" src={{env.type.Water.icon}}><p class="legend-text">{{env.type.Water.value}}</p>
+  <img class="legend-img" src={{env.type.Sewer.icon}}><p class="legend-text">{{env.type.Sewer.value}}</p>
+  <img class="legend-img" src={{env.type.Trash.icon}}><p class="legend-text">{{env.type.Trash.value}}</p>
+</div>
